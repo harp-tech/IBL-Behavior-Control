@@ -2,6 +2,8 @@
 
 Repository for the IBL's new behavior control system, based on Harp technology.
 
+![DeviceFront](Pics/front.jpg)
+
 # Licensing
 
 The code and documentation available in this repository is free: you can redistribute it and/or modify it under the terms of the used license.
