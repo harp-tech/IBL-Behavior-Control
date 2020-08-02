@@ -107,9 +107,23 @@ bool (*app_func_wr_pointer[])(void*) = {
 #define DAC_GAINCAL 0x83
 #define DAC_OFFSETCAL 0x85
 
+extern bool stream_is_enabled;
+
+uint8_t IO0_input_sense;
+uint8_t IO1_input_sense;
+uint8_t IO2_input_sense;
+
 void app_read_REG_CONFIG(void)
-{
-	app_regs.REG_CONFIG &= B_DATA_QUIET | B_DATA_1Khz;
+{	
+	if (stream_is_enabled)
+	{
+		app_regs.REG_CONFIG = B_DATA_1Khz;
+	}
+	else
+	{
+		app_regs.REG_CONFIG = B_DATA_QUIET;
+	}
+
 	
 	if (read_CLOCK_OUT_EN)  app_regs.REG_CONFIG |= B_SYNC_TO_MASTER;
 	if (read_CLOCK_IN_EN)   app_regs.REG_CONFIG |= B_SYNC_TO_SLAVE;
@@ -166,53 +180,57 @@ bool app_write_REG_CONFIG(void *a)
 	if (reg & B_EN_AI)
 	{
 		io_set_int(&PORTF, INT_LEVEL_OFF, 0, (1<<1), false);	// Disable IO0 interrupt
-		clr_LED_IO0;
+		io_pin2in(&PORTF, 1, PULL_IO_TRISTATE, SENSE_IO_NO_INT_USED);
+		clr_IO0_DIR;
+		
 		adc_A_initialize_single_ended(ADC_REFSEL_AREFB_gc);
-		ADCA_CH0_INTCTRL |= ADC_CH_INTLVL_LO_gc;				// Enable interrupt
+		ADCA_CH0_INTCTRL |= ADC_CH_INTLVL_LO_gc;				// Enable ADC interrupt
 	}
 	
 	if (reg & B_IO0_TO_INPUT)
 	{
-		PR_PRPA |= PR_ADC_bm;									// Enable power reduction
 		ADCA_CTRLA = 0;											// Disable ADCA
+		PR_PRPA |= PR_ADC_bm;									// Enable power reduction
 		
 		clr_IO0_DIR;
-		io_pin2in(&PORTF, 1, PULL_IO_TRISTATE, SENSE_IO_EDGES_BOTH);
-		io_set_int(&PORTF, INT_LEVEL_LOW, 0, (1<<1), false);	// Enable IO0 interrupt
+		app_write_REG_INPUT_IO0_CONFIG(&app_regs.REG_INPUT_IO0_CONFIG);
 	}
 	if (reg & B_IO0_TO_OUTPUT)
 	{
-		PR_PRPA |= PR_ADC_bm;									// Enable power reduction
 		ADCA_CTRLA = 0;											// Disable ADCA
+		PR_PRPA |= PR_ADC_bm;									// Enable power reduction		
 		
+		io_set_int(&PORTF, INT_LEVEL_OFF, 0, (1<<1), false);
+		io_pin2out(&PORTF, 1, OUT_IO_DIGITAL, true);
 		set_IO0_DIR;
-		io_pin2out_with_interrupt(&PORTF, 1, OUT_IO_DIGITAL, SENSE_IO_EDGES_BOTH);
-		io_set_int(&PORTF, INT_LEVEL_LOW, 0, (1<<1), false);	// Enable IO0 interrupt
 	}
 	
 	if (reg & B_IO1_TO_INPUT)
 	{
 		clr_IO1_DIR;
-		io_pin2in(&PORTK, 1, PULL_IO_TRISTATE, SENSE_IO_EDGES_BOTH);
+		app_write_REG_INPUT_IO1_CONFIG(&app_regs.REG_INPUT_IO1_CONFIG);
 	}
 	if (reg & B_IO1_TO_OUTPUT)
 	{
+		io_set_int(&PORTK, INT_LEVEL_OFF, 0, (1<<1), false);
+		io_pin2out(&PORTK, 1, OUT_IO_DIGITAL, true);
 		set_IO1_DIR;
-		io_pin2out_with_interrupt(&PORTK, 1, OUT_IO_DIGITAL, SENSE_IO_EDGES_BOTH);
 	}
 	
 	if (reg & B_IO2_TO_INPUT)
 	{
 		clr_IO2_DIR;
-		io_pin2in(&PORTK, 2, PULL_IO_TRISTATE, SENSE_IO_EDGES_BOTH);
+		app_write_REG_INPUT_IO2_CONFIG(&app_regs.REG_INPUT_IO2_CONFIG);
 	}
 	if (reg & B_IO2_TO_OUTPUT)
 	{
+		io_set_int(&PORTK, INT_LEVEL_OFF, 1, (1<<2), false);
+		io_pin2out(&PORTK, 2, OUT_IO_DIGITAL, true);
 		set_IO2_DIR;
-		io_pin2out_with_interrupt(&PORTK, 2, OUT_IO_DIGITAL, SENSE_IO_EDGES_BOTH);
 	}
 	
-	if (reg & B_DATA_1Khz)  reg &= ~(B_DATA_QUIET);
+	if (reg & B_DATA_1Khz)  stream_is_enabled = true;
+	if (reg & B_DATA_QUIET) stream_is_enabled = false;
 
 	app_regs.REG_CONFIG = reg;
 	return true;
@@ -223,19 +241,9 @@ bool app_write_REG_CONFIG(void *a)
 /* REG_DATA_STREAM                                                      */
 /************************************************************************/
 // This register is an array with 4 positions
-void app_read_REG_DATA_STREAM(void)
-{
-	//app_regs.REG_DATA_STREAM[0] = 0;
-
-}
-
-bool app_write_REG_DATA_STREAM(void *a)
-{
-	int16_t *reg = ((int16_t*)a);
-
-	app_regs.REG_DATA_STREAM[0] = reg[0];
-	return true;
-}
+void app_read_REG_DATA_STREAM(void) {}
+	
+bool app_write_REG_DATA_STREAM(void *a) {return false;}
 
 
 /************************************************************************/
@@ -243,31 +251,38 @@ bool app_write_REG_DATA_STREAM(void *a)
 /************************************************************************/
 void app_read_REG_INPUTS(void)
 {
-	//app_regs.REG_INPUTS = 0;
-
+	app_regs.REG_INPUTS  = (read_IO0) ? B_IO0 : 0;
+	app_regs.REG_INPUTS |= (read_IO1) ? B_IO1 : 0;
+	app_regs.REG_INPUTS |= (read_IO2) ? B_IO2 : 0;
 }
 
-bool app_write_REG_INPUTS(void *a)
-{
-	uint8_t reg = *((uint8_t*)a);
-
-	app_regs.REG_INPUTS = reg;
-	return true;
-}
+bool app_write_REG_INPUTS(void *a) {return false;}
 
 
 /************************************************************************/
 /* REG_INPUT_IO0_CONFIG                                                 */
 /************************************************************************/
-void app_read_REG_INPUT_IO0_CONFIG(void)
-{
-	//app_regs.REG_INPUT_IO0_CONFIG = 0;
-
-}
-
+void app_read_REG_INPUT_IO0_CONFIG(void) {}
 bool app_write_REG_INPUT_IO0_CONFIG(void *a)
 {
 	uint8_t reg = *((uint8_t*)a);
+	
+	if (ADCA_CTRLA == 0 && !read_IO0_DIR)
+	{
+		switch (reg)
+		{
+			case GM_INPUT_NOT_USED:
+				io_pin2in(&PORTF, 1, PULL_IO_TRISTATE, SENSE_IO_NO_INT_USED);
+				io_set_int(&PORTF, INT_LEVEL_OFF, 0, (1<<1), false);
+				break;
+			
+			case GM_INPUT_SENSE_BOTH:
+				io_pin2in(&PORTF, 1, PULL_IO_TRISTATE, SENSE_IO_EDGES_BOTH);
+				io_set_int(&PORTF, INT_LEVEL_LOW, 0, (1<<1), false);
+				tgl_LED_IO2;
+				break;
+		}
+	}
 
 	app_regs.REG_INPUT_IO0_CONFIG = reg;
 	return true;
@@ -277,15 +292,26 @@ bool app_write_REG_INPUT_IO0_CONFIG(void *a)
 /************************************************************************/
 /* REG_INPUT_IO1_CONFIG                                                 */
 /************************************************************************/
-void app_read_REG_INPUT_IO1_CONFIG(void)
-{
-	//app_regs.REG_INPUT_IO1_CONFIG = 0;
-
-}
-
+void app_read_REG_INPUT_IO1_CONFIG(void) {}
 bool app_write_REG_INPUT_IO1_CONFIG(void *a)
 {
 	uint8_t reg = *((uint8_t*)a);
+	
+	if (!read_IO1_DIR)
+	{
+		switch (reg)
+		{
+			case GM_INPUT_NOT_USED:
+				io_pin2in(&PORTK, 1, PULL_IO_TRISTATE, SENSE_IO_NO_INT_USED);
+				io_set_int(&PORTK, INT_LEVEL_OFF, 0, (1<<1), false);
+				break;
+			
+			case GM_INPUT_SENSE_BOTH:
+				io_pin2in(&PORTK, 1, PULL_IO_TRISTATE, SENSE_IO_EDGES_BOTH);
+				io_set_int(&PORTK, INT_LEVEL_LOW, 0, (1<<1), false);
+				break;
+		}
+	}
 
 	app_regs.REG_INPUT_IO1_CONFIG = reg;
 	return true;
@@ -295,16 +321,27 @@ bool app_write_REG_INPUT_IO1_CONFIG(void *a)
 /************************************************************************/
 /* REG_INPUT_IO2_CONFIG                                                 */
 /************************************************************************/
-void app_read_REG_INPUT_IO2_CONFIG(void)
-{
-	//app_regs.REG_INPUT_IO2_CONFIG = 0;
-
-}
-
+void app_read_REG_INPUT_IO2_CONFIG(void) {}
 bool app_write_REG_INPUT_IO2_CONFIG(void *a)
 {
 	uint8_t reg = *((uint8_t*)a);
-
+	
+	if (!read_IO2_DIR)
+	{
+		switch (reg)
+		{
+			case GM_INPUT_NOT_USED:
+				io_pin2in(&PORTK, 2, PULL_IO_TRISTATE, SENSE_IO_NO_INT_USED);
+				io_set_int(&PORTK, INT_LEVEL_OFF, 1, (1<<2), false);
+				break;
+			
+			case GM_INPUT_SENSE_BOTH:
+				io_pin2in(&PORTK, 2, PULL_IO_TRISTATE, SENSE_IO_EDGES_BOTH);
+				io_set_int(&PORTK, INT_LEVEL_LOW, 1, (1<<2), false);
+				break;
+		}
+	}
+	
 	app_regs.REG_INPUT_IO2_CONFIG = reg;
 	return true;
 }
@@ -313,8 +350,10 @@ bool app_write_REG_INPUT_IO2_CONFIG(void *a)
 /************************************************************************/
 /* REG_OUTPUT_SET                                                       */
 /************************************************************************/
-void app_read_REG_OUTPUT_SET(void) {
-	app_regs.REG_OUTPUT_SET = 0;
+void app_read_REG_OUTPUT_SET(void)
+{
+	app_read_REG_OUTPUT_WRITE();
+	app_regs.REG_OUTPUT_SET = app_regs.REG_OUTPUT_WRITE;
 }
 
 bool app_write_REG_OUTPUT_SET(void *a)
@@ -331,8 +370,10 @@ bool app_write_REG_OUTPUT_SET(void *a)
 /************************************************************************/
 /* REG_OUTPUT_CLEAR                                                     */
 /************************************************************************/
-void app_read_REG_OUTPUT_CLEAR(void) {
-	app_regs.REG_OUTPUT_CLEAR = 0;
+void app_read_REG_OUTPUT_CLEAR(void)
+{
+	app_read_REG_OUTPUT_WRITE();
+	app_regs.REG_OUTPUT_CLEAR = (~app_regs.REG_OUTPUT_WRITE) & 0x07;
 }
 
 bool app_write_REG_OUTPUT_CLEAR(void *a)
@@ -367,7 +408,29 @@ bool app_write_REG_OUTPUT_TOGGLE(void *a)
 /************************************************************************/
 /* REG_OUTPUT_WRITE                                                     */
 /************************************************************************/
-void app_read_REG_OUTPUT_WRITE(void) {}
+void app_read_REG_OUTPUT_WRITE(void)
+{
+	app_regs.REG_OUTPUT_WRITE = 0;
+	
+	if (ADCA_CTRLA == 0)
+	{		
+		if (read_IO0_DIR)
+		{
+			app_regs.REG_OUTPUT_WRITE  |= (read_IO0) ? B_IO0 : 0;
+		}
+	}
+	
+	if (read_IO1_DIR)
+	{
+		app_regs.REG_OUTPUT_WRITE  |= (read_IO1) ? B_IO1 : 0;
+	}
+	
+	if (read_IO1_DIR)
+	{
+		app_regs.REG_OUTPUT_WRITE  |= (read_IO2) ? B_IO2 : 0;
+	}
+}
+
 bool app_write_REG_OUTPUT_WRITE(void *a)
 {
 	uint8_t reg = *((uint8_t*)a);
@@ -949,6 +1012,8 @@ void app_read_REG_WRITE_AO(void)
 bool app_write_REG_WRITE_AO(void *a)
 {
 	uint16_t reg = *((uint16_t*)a);
+	
+	DACB.CH0DATA = reg;
 
 	app_regs.REG_WRITE_AO = reg;
 	return true;

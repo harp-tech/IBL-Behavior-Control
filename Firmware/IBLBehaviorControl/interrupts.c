@@ -39,7 +39,17 @@ ISR(PORTC_INT0_vect, ISR_NAKED)
 /************************************************************************/
 ISR(PORTF_INT0_vect, ISR_NAKED)
 {
-	if(read_IO0) {if(core_bool_is_visual_enabled()) set_LED_IO0;} else clr_LED_IO0;
+	if(read_IO0)
+	{
+		app_regs.REG_INPUTS |= B_IO0;
+	}
+	else
+	{
+		app_regs.REG_INPUTS &= ~B_IO0;
+	}
+	
+	core_func_send_event(ADD_REG_INPUTS, true);
+	
 	reti();
 }
 
@@ -48,7 +58,17 @@ ISR(PORTF_INT0_vect, ISR_NAKED)
 /************************************************************************/
 ISR(PORTK_INT0_vect, ISR_NAKED)
 {
-	if(read_IO1) {if(core_bool_is_visual_enabled()) set_LED_IO1;} else clr_LED_IO1;
+	if(read_IO1)
+	{
+		app_regs.REG_INPUTS |= B_IO1;
+	}
+	else
+	{
+		app_regs.REG_INPUTS &= ~B_IO1;
+	}
+	
+	core_func_send_event(ADD_REG_INPUTS, true);
+	
 	reti();
 }
 
@@ -57,7 +77,17 @@ ISR(PORTK_INT0_vect, ISR_NAKED)
 /************************************************************************/
 ISR(PORTK_INT1_vect, ISR_NAKED)
 {
-	if(read_IO2) {if(core_bool_is_visual_enabled()) set_LED_IO2;} else clr_LED_IO2;
+	if(read_IO2)
+	{
+		app_regs.REG_INPUTS |= B_IO2;
+	}
+	else
+	{
+		app_regs.REG_INPUTS &= ~B_IO2;
+	}
+	
+	core_func_send_event(ADD_REG_INPUTS, true);
+	
 	reti();
 }
 

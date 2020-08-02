@@ -298,9 +298,7 @@ typedef struct
 #define B_ENTH1                            (1<<5)       // 
 #define MSK_INPUT_OPTIONS                  0x03         // Options available for registers INPUT_IOx_CONFIG
 #define GM_INPUT_NOT_USED                  (0<<0)       // Input is not used
-#define GM_INPUT_SENSE_RISING              (1<<0)       // Input sensitive to rising only
-#define GM_INPUT_SENSE_FALLING             (2<<0)       // Input sensitive to falling only
-#define GM_INPUT_SENSE_BOTH                (3<<0)       // Input sensitive to any state change
+#define GM_INPUT_SENSE_BOTH                (1<<0)       // Input sensitive to any state change
 #define B_IO0                              (1<<0)       // Mask of IO0
 #define B_IO1                              (1<<1)       // Mask of IO1
 #define B_IO2                              (1<<2)       // Mask of IO2
