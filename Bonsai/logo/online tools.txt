@@ -1,0 +1,3 @@
+Convert to .ico format: https://icoconvert.com/
+Resize and convert:     http://convert-my-image.com/ImageConverter
+Convert .bmp to svg.:   https://convertio.co/pt/bmp-svg/

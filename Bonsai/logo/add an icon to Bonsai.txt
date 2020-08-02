@@ -1,0 +1,11 @@
+Examples: https://github.com/bonsai-rx/bonsai-icons
+
+Add own image:
+	Add the file to the visual studio project (not the solution).
+	Change the file name to the namespace that you want (keeping the .svg extension).
+	Note: You may need more than one file if you want to use it for more than one namespace.
+	Click on the file under the visual studio Solution Explorer and, in the Properties, configure Build Action = Embedded Resource
+
+User a Bonsai default icon to all the nodes:
+	Go to AssemblyInfo.cs and add the next line to use the DAQ icon, for example.
+	[assembly: WorkflowNamespaceIcon("Bonsai:ElementIcon.Daq")]
