@@ -16,6 +16,7 @@ uint8_t adc_accumulator_counter = 1;
 /************************************************************************/
 /* Data stream interrupt                                                */
 /************************************************************************/
+bool stream_is_enabled;
 
 uint16_t ana_sensor_th0_up_counter = 0;
 uint16_t ana_sensor_th1_up_counter = 0;
@@ -49,9 +50,7 @@ ISR(TCD1_OVF_vect, ISR_NAKED)
 		adc_accumulator_counter++;
 	}
 	else /*if(adc_accumulator_counter == ADC_ACCUMULATOR_TARGET)*/
-	{
-		set_IO0;
-		
+	{		
 		adc_accumulator_counter = 1;
 		
 		timer_type1_stop(&TCD1);
@@ -82,7 +81,7 @@ ISR(TCD1_OVF_vect, ISR_NAKED)
 		/* Analog sensor TH0 */
 		if (app_regs.REG_DATA_STREAM[0] >= app_regs.REG_ANA_SENSOR_TH0_HIGH)
 		{
-			if (++ana_sensor_th0_up_counter == app_regs.REG_ANA_SENSOR_TH0_HIGH_MS + 1)
+			if (++ana_sensor_th0_up_counter >= app_regs.REG_ANA_SENSOR_TH0_HIGH_MS + 1)
 				app_regs.REG_DATA_STREAM[3] |= B_ASTH0;
 			if (ana_sensor_th0_up_counter > app_regs.REG_ANA_SENSOR_TH0_HIGH_MS)
 				ana_sensor_th0_up_counter--;
@@ -91,7 +90,7 @@ ISR(TCD1_OVF_vect, ISR_NAKED)
 		}
 		else if (app_regs.REG_DATA_STREAM[0] <= app_regs.REG_ANA_SENSOR_TH0_LOW)
 		{
-			if (++ana_sensor_th0_down_counter == app_regs.REG_ANA_SENSOR_TH0_LOW_MS + 1)
+			if (++ana_sensor_th0_down_counter >= app_regs.REG_ANA_SENSOR_TH0_LOW_MS + 1)
 				app_regs.REG_DATA_STREAM[3] &= ~(B_ASTH0);
 			if (ana_sensor_th0_down_counter > app_regs.REG_ANA_SENSOR_TH0_LOW_MS)
 				ana_sensor_th0_down_counter--;
@@ -107,7 +106,7 @@ ISR(TCD1_OVF_vect, ISR_NAKED)
 		/* Analog sensor TH1 */
 		if (app_regs.REG_DATA_STREAM[0] >= app_regs.REG_ANA_SENSOR_TH1_HIGH)
 		{
-			if (++ana_sensor_th1_up_counter == app_regs.REG_ANA_SENSOR_TH1_HIGH_MS + 1)
+			if (++ana_sensor_th1_up_counter >= app_regs.REG_ANA_SENSOR_TH1_HIGH_MS + 1)
 				app_regs.REG_DATA_STREAM[3] |= B_ASTH1;
 			if (ana_sensor_th1_up_counter > app_regs.REG_ANA_SENSOR_TH1_HIGH_MS)
 				ana_sensor_th1_up_counter--;
@@ -116,7 +115,7 @@ ISR(TCD1_OVF_vect, ISR_NAKED)
 		}
 		else if (app_regs.REG_DATA_STREAM[0] <= app_regs.REG_ANA_SENSOR_TH1_LOW)
 		{
-			if (++ana_sensor_th1_down_counter == app_regs.REG_ANA_SENSOR_TH1_LOW_MS + 1)
+			if (++ana_sensor_th1_down_counter >= app_regs.REG_ANA_SENSOR_TH1_LOW_MS + 1)
 				app_regs.REG_DATA_STREAM[3] &= ~(B_ASTH1);
 			if (ana_sensor_th1_down_counter > app_regs.REG_ANA_SENSOR_TH1_LOW_MS)
 				ana_sensor_th1_down_counter--;
@@ -132,7 +131,7 @@ ISR(TCD1_OVF_vect, ISR_NAKED)
 		/* Analog input TH0 */
 		if (app_regs.REG_DATA_STREAM[1] >= app_regs.REG_ANA_INPUT_TH0_HIGH)
 		{
-			if (++ana_input_th0_up_counter == app_regs.REG_ANA_INPUT_TH0_HIGH_MS + 1)
+			if (++ana_input_th0_up_counter >= app_regs.REG_ANA_INPUT_TH0_HIGH_MS + 1)
 				app_regs.REG_DATA_STREAM[3] |= B_AITH0;
 			if (ana_input_th0_up_counter > app_regs.REG_ANA_INPUT_TH0_HIGH_MS)
 				ana_input_th0_up_counter--;
@@ -141,7 +140,7 @@ ISR(TCD1_OVF_vect, ISR_NAKED)
 		}
 		else if (app_regs.REG_DATA_STREAM[1] <= app_regs.REG_ANA_INPUT_TH0_LOW)
 		{
-			if (++ana_input_th0_down_counter == app_regs.REG_ANA_INPUT_TH0_LOW_MS + 1)
+			if (++ana_input_th0_down_counter >= app_regs.REG_ANA_INPUT_TH0_LOW_MS + 1)
 				app_regs.REG_DATA_STREAM[3] &= ~(B_AITH0);
 			if (ana_input_th0_down_counter > app_regs.REG_ANA_INPUT_TH0_LOW_MS)
 				ana_input_th0_down_counter--;
@@ -157,7 +156,7 @@ ISR(TCD1_OVF_vect, ISR_NAKED)
 		/* Analog input TH1 */
 		if (app_regs.REG_DATA_STREAM[1] >= app_regs.REG_ANA_INPUT_TH1_HIGH)
 		{
-			if (++ana_input_th1_up_counter == app_regs.REG_ANA_INPUT_TH1_HIGH_MS + 1)
+			if (++ana_input_th1_up_counter >= app_regs.REG_ANA_INPUT_TH1_HIGH_MS + 1)
 				app_regs.REG_DATA_STREAM[3] |= B_AITH1;
 			if (ana_input_th1_up_counter > app_regs.REG_ANA_INPUT_TH1_HIGH_MS)
 				ana_input_th1_up_counter--;
@@ -166,7 +165,7 @@ ISR(TCD1_OVF_vect, ISR_NAKED)
 		}
 		else if (app_regs.REG_DATA_STREAM[1] <= app_regs.REG_ANA_INPUT_TH1_LOW)
 		{
-			if (++ana_input_th1_down_counter == app_regs.REG_ANA_INPUT_TH1_LOW_MS + 1)
+			if (++ana_input_th1_down_counter >= app_regs.REG_ANA_INPUT_TH1_LOW_MS + 1)
 				app_regs.REG_DATA_STREAM[3] &= ~(B_AITH1);
 			if (ana_input_th1_down_counter > app_regs.REG_ANA_INPUT_TH1_LOW_MS)
 				ana_input_th1_down_counter--;
@@ -182,7 +181,7 @@ ISR(TCD1_OVF_vect, ISR_NAKED)
 		/* Encoder input TH0 */
 		if (app_regs.REG_DATA_STREAM[2] >= app_regs.REG_ENCODER_TH0_HIGH)
 		{
-			if (++encoder_th0_up_counter == app_regs.REG_ENCODER_TH0_HIGH_MS + 1)
+			if (++encoder_th0_up_counter >= app_regs.REG_ENCODER_TH0_HIGH_MS + 1)
 				app_regs.REG_DATA_STREAM[3] |= B_ENTH0;
 			if (encoder_th0_up_counter > app_regs.REG_ENCODER_TH0_HIGH_MS)
 				encoder_th0_up_counter--;
@@ -191,7 +190,7 @@ ISR(TCD1_OVF_vect, ISR_NAKED)
 		}
 		else if (app_regs.REG_DATA_STREAM[2] <= app_regs.REG_ENCODER_TH0_LOW)
 		{
-			if (++encoder_th0_down_counter == app_regs.REG_ENCODER_TH0_LOW_MS + 1)
+			if (++encoder_th0_down_counter >= app_regs.REG_ENCODER_TH0_LOW_MS + 1)
 				app_regs.REG_DATA_STREAM[3] &= ~(B_ENTH0);
 			if (encoder_th0_down_counter > app_regs.REG_ENCODER_TH0_LOW_MS)
 				encoder_th0_down_counter--;
@@ -207,7 +206,7 @@ ISR(TCD1_OVF_vect, ISR_NAKED)
 		/* Encoder TH1 */
 		if (app_regs.REG_DATA_STREAM[2] >= app_regs.REG_ENCODER_TH1_HIGH)
 		{
-			if (++encoder_th1_up_counter == app_regs.REG_ENCODER_TH1_HIGH_MS + 1)
+			if (++encoder_th1_up_counter >= app_regs.REG_ENCODER_TH1_HIGH_MS + 1)
 				app_regs.REG_DATA_STREAM[3] |= B_ENTH1;
 			if (encoder_th1_up_counter > app_regs.REG_ENCODER_TH1_HIGH_MS)
 				encoder_th1_up_counter--;
@@ -216,7 +215,7 @@ ISR(TCD1_OVF_vect, ISR_NAKED)
 		}
 		else if (app_regs.REG_DATA_STREAM[2] <= app_regs.REG_ENCODER_TH1_LOW)
 		{
-			if (++encoder_th1_down_counter == app_regs.REG_ENCODER_TH1_LOW_MS + 1)
+			if (++encoder_th1_down_counter >= app_regs.REG_ENCODER_TH1_LOW_MS + 1)
 				app_regs.REG_DATA_STREAM[3] &= ~(B_ENTH1);
 			if (encoder_th1_down_counter > app_regs.REG_ENCODER_TH1_LOW_MS)
 				encoder_th1_down_counter--;
@@ -229,22 +228,19 @@ ISR(TCD1_OVF_vect, ISR_NAKED)
 			case GM_TH_ON_IO2: if (app_regs.REG_DATA_STREAM[3] & B_ENTH1) set_IO2; else clr_IO2; break;
 		}
 		
-		
-		bool send_data = false;
-		
-		if (app_regs.REG_TH_ENABLE_EVENTS & B_ASTH0) if ((prev_data_stream & B_ASTH0) != (app_regs.REG_DATA_STREAM[3] & B_ASTH0)) send_data = true;
-		if (app_regs.REG_TH_ENABLE_EVENTS & B_ASTH1) if ((prev_data_stream & B_ASTH1) != (app_regs.REG_DATA_STREAM[3] & B_ASTH1)) send_data = true;
-		if (app_regs.REG_TH_ENABLE_EVENTS & B_AITH0) if ((prev_data_stream & B_AITH0) != (app_regs.REG_DATA_STREAM[3] & B_AITH0)) send_data = true;
-		if (app_regs.REG_TH_ENABLE_EVENTS & B_AITH1) if ((prev_data_stream & B_AITH1) != (app_regs.REG_DATA_STREAM[3] & B_AITH1)) send_data = true;
-		if (app_regs.REG_TH_ENABLE_EVENTS & B_ENTH0) if ((prev_data_stream & B_ENTH0) != (app_regs.REG_DATA_STREAM[3] & B_ENTH0)) send_data = true;
-		if (app_regs.REG_TH_ENABLE_EVENTS & B_ENTH1) if ((prev_data_stream & B_ENTH1) != (app_regs.REG_DATA_STREAM[3] & B_ENTH1)) send_data = true;			
-				
-		if (app_regs.REG_CONFIG & B_DATA_1Khz) send_data = true;
-		
-		if (send_data)
+		if (!stream_is_enabled)
+		{	
+			if (app_regs.REG_TH_ENABLE_EVENTS & B_ASTH0) if ((prev_data_stream & B_ASTH0) != (app_regs.REG_DATA_STREAM[3] & B_ASTH0)) {core_func_send_event(ADD_REG_DATA_STREAM, true); reti();}
+			if (app_regs.REG_TH_ENABLE_EVENTS & B_ASTH1) if ((prev_data_stream & B_ASTH1) != (app_regs.REG_DATA_STREAM[3] & B_ASTH1)) {core_func_send_event(ADD_REG_DATA_STREAM, true); reti();}
+			if (app_regs.REG_TH_ENABLE_EVENTS & B_AITH0) if ((prev_data_stream & B_AITH0) != (app_regs.REG_DATA_STREAM[3] & B_AITH0)) {core_func_send_event(ADD_REG_DATA_STREAM, true); reti();}
+			if (app_regs.REG_TH_ENABLE_EVENTS & B_AITH1) if ((prev_data_stream & B_AITH1) != (app_regs.REG_DATA_STREAM[3] & B_AITH1)) {core_func_send_event(ADD_REG_DATA_STREAM, true); reti();}
+			if (app_regs.REG_TH_ENABLE_EVENTS & B_ENTH0) if ((prev_data_stream & B_ENTH0) != (app_regs.REG_DATA_STREAM[3] & B_ENTH0)) {core_func_send_event(ADD_REG_DATA_STREAM, true); reti();}
+			if (app_regs.REG_TH_ENABLE_EVENTS & B_ENTH1) if ((prev_data_stream & B_ENTH1) != (app_regs.REG_DATA_STREAM[3] & B_ENTH1)) {core_func_send_event(ADD_REG_DATA_STREAM, true); reti();}
+		}
+		else
+		{
 			core_func_send_event(ADD_REG_DATA_STREAM, true);
-		
-		clr_IO0;
+		}
 	}
 	
 	reti();
