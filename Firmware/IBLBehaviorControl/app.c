@@ -122,13 +122,17 @@ void core_callback_reset_registers(void)
 	app_regs.REG_CONFIG |= B_COM_TO_MAIN    | B_IO1_TO_OUTPUT    | B_IO2_TO_OUTPUT;
 	app_regs.REG_CONFIG |= B_DATA_1Khz;
 	
+	app_regs.REG_INPUT_IO0_CONFIG = GM_INPUT_SENSE_BOTH;
+	app_regs.REG_INPUT_IO1_CONFIG = GM_INPUT_SENSE_BOTH;
+	app_regs.REG_INPUT_IO2_CONFIG = GM_INPUT_SENSE_BOTH;
+	
 	app_regs.REG_OUTPUT_WRITE = 0;	
 	
 	app_regs.REG_ANA_SENSOR_TH0_HIGH = 2500;
 	app_regs.REG_ANA_SENSOR_TH0_HIGH_MS = 1;
 	app_regs.REG_ANA_SENSOR_TH0_LOW = 1500;
 	app_regs.REG_ANA_SENSOR_TH0_LOW_MS = 1;
-	app_regs.REG_ANA_SENSOR_TH0_EVT_CONF = GM_TH_ON_IO1;
+	app_regs.REG_ANA_SENSOR_TH0_EVT_CONF = GM_TH_NOT_USED;
 	app_regs.REG_ANA_SENSOR_TH1_HIGH = 2;
 	app_regs.REG_ANA_SENSOR_TH1_HIGH_MS = 1;
 	app_regs.REG_ANA_SENSOR_TH1_LOW = 0;
@@ -138,7 +142,7 @@ void core_callback_reset_registers(void)
 	app_regs.REG_ANA_INPUT_TH0_HIGH_MS = 1;
 	app_regs.REG_ANA_INPUT_TH0_LOW = 1500;
 	app_regs.REG_ANA_INPUT_TH0_LOW_MS = 1;
-	app_regs.REG_ANA_INPUT_TH0_EVT_CONF = GM_TH_ON_IO2;
+	app_regs.REG_ANA_INPUT_TH0_EVT_CONF = GM_TH_NOT_USED;
 	app_regs.REG_ANA_INPUT_TH1_HIGH = 2;
 	app_regs.REG_ANA_INPUT_TH1_HIGH_MS = 1;
 	app_regs.REG_ANA_INPUT_TH1_LOW = 0;
@@ -227,11 +231,21 @@ void core_callback_t_new_second(void)
 
 }
 
+uint8_t update_leds_counter;
+
 void core_callback_t_500us(void)
 {
-   if (app_regs.REG_DATA_STREAM[3] & B_ASTH0 == true)
-      set_IO1;
-   
+	if (update_leds_counter++ & 0x10)	// Update LEDs each 16 ms
+	{	
+		if (core_bool_is_visual_enabled())
+		{
+			if (read_CLOCK_OUT_EN)  {clr_LED_SLAVE; set_LED_MASTER;}
+			if (read_CLOCK_IN_EN)   {set_LED_SLAVE; clr_LED_MASTER;}
+			if (read_IO0) set_LED_IO0; else clr_LED_IO0;
+			if (read_IO1) set_LED_IO1; else clr_LED_IO1;
+			if (read_IO2) set_LED_IO2; else clr_LED_IO2;
+		}
+	}   
 }
 
 void core_callback_t_1ms(void)
