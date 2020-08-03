@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>    
+    <projectUrl>https://github.com/harp-tech/IBL_behavior_control</projectUrl>
+    <iconUrl>https://github.com/harp-tech/IBL_behavior_control/raw/master/Bonsai/logo/ibl_logo_128x128.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <copyright>$author$ © 2020</copyright>
+    <tags>IBL Open Ephys Harp Behavior Control Neuro Neuroscience</tags>
+  </metadata>
+</package>

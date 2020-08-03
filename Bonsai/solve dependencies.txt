@@ -1,0 +1,27 @@
+1. Add Bonsai Package Sources to the Project:
+	Right-click on the Project and select Manage NuGet Packages
+	Click on the gear-wheel (top righ corner)
+	Add
+		Name: nuget.org
+		Source: https://api.nuget.org/v3/index.json
+		And click Update
+	Add Bonsai-Community
+		Name: Bonsai-Community
+		Source: https://www.myget.org/F/bonsai-community/api/v3/index.json
+		And click Update
+
+
+2. Install dependencies
+	Right-click on the Project and select Manage NuGet Packages
+	Install Bonsai.Core v2.5.0 and Bonsai.Harp 3.1.0
+
+
+3. Update dependencies in the file packages.config and rebuild all
+
+
+4. Under the Project on Solution Explorer go to References
+	Check, in Properties, if Bonsai.Core and Bonsai.Harp have the right versions
+
+
+5. Go to Solution -> Properties
+	Check if the Target framework is using .NET Framework 4.7.2 or above.
