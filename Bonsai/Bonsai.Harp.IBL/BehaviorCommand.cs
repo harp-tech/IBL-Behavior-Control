@@ -8,9 +8,9 @@ using System.Linq.Expressions;
 using System.Reactive.Linq;
 using System.ComponentModel;
 
-namespace Bonsai.Harp.IBL.Behavior
+namespace Bonsai.Harp.IBL
 {
-    public enum IblBehaviorCommandType : byte
+    public enum BehaviorCommandType : byte
     {
         DataToQuiet,
         DataTo1KHz,
@@ -42,11 +42,11 @@ namespace Bonsai.Harp.IBL.Behavior
         "WriteRegisterAnalogOutput: U16"
     )]
 
-    public class IblBehaviorCommand : SelectBuilder, INamedElement
+    public class BehaviorCommand : SelectBuilder, INamedElement
     {
-        public IblBehaviorCommand()
+        public BehaviorCommand()
         {
-            Type = IblBehaviorCommandType.DataTo1KHz;
+            Type = BehaviorCommandType.DataTo1KHz;
         }
 
         string INamedElement.Name
@@ -55,7 +55,7 @@ namespace Bonsai.Harp.IBL.Behavior
             get { return Type.ToString(); }
         }
 
-        public IblBehaviorCommandType Type { get; set; }
+        public BehaviorCommandType Type { get; set; }
 
         protected override Expression BuildSelector(Expression expression)
         {
@@ -64,48 +64,48 @@ namespace Bonsai.Harp.IBL.Behavior
                 /************************************************************************/
                 /* Register: CONFIG                                                     */
                 /************************************************************************/
-                case IblBehaviorCommandType.DataToQuiet:
-                    return Expression.Call(typeof(IblBehaviorCommand), "ProcessDataToQuiet", new[] { expression.Type }, expression);
+                case BehaviorCommandType.DataToQuiet:
+                    return Expression.Call(typeof(BehaviorCommand), "ProcessDataToQuiet", new[] { expression.Type }, expression);
 
-                case IblBehaviorCommandType.DataTo1KHz:
-                    return Expression.Call(typeof(IblBehaviorCommand), "ProcessDataTo1KHz", new[] { expression.Type }, expression);
+                case BehaviorCommandType.DataTo1KHz:
+                    return Expression.Call(typeof(BehaviorCommand), "ProcessDataTo1KHz", new[] { expression.Type }, expression);
 
                 /************************************************************************/
                 /* Registers: DIGITAL_OUT                                               */
                 /************************************************************************/
-                case IblBehaviorCommandType.SetOutputs:
+                case BehaviorCommandType.SetOutputs:
                     if (expression.Type != typeof(byte)) { expression = Expression.Convert(expression, typeof(byte)); }
-                    return Expression.Call(typeof(IblBehaviorCommand), "ProcessSetOutputs", null, expression);
+                    return Expression.Call(typeof(BehaviorCommand), "ProcessSetOutputs", null, expression);
 
-                case IblBehaviorCommandType.ClearOutputs:
+                case BehaviorCommandType.ClearOutputs:
                     if (expression.Type != typeof(byte)) { expression = Expression.Convert(expression, typeof(byte)); }
-                    return Expression.Call(typeof(IblBehaviorCommand), "ProcessClearOutputs", null, expression);
+                    return Expression.Call(typeof(BehaviorCommand), "ProcessClearOutputs", null, expression);
 
-                case IblBehaviorCommandType.ToggleOutputs:
+                case BehaviorCommandType.ToggleOutputs:
                     if (expression.Type != typeof(byte)) { expression = Expression.Convert(expression, typeof(byte)); }
-                    return Expression.Call(typeof(IblBehaviorCommand), "ProcessToggleOutputs", null, expression);
+                    return Expression.Call(typeof(BehaviorCommand), "ProcessToggleOutputs", null, expression);
 
-                case IblBehaviorCommandType.WriteOutputs:
+                case BehaviorCommandType.WriteOutputs:
                     if (expression.Type != typeof(byte)) { expression = Expression.Convert(expression, typeof(byte)); }
-                    return Expression.Call(typeof(IblBehaviorCommand), "ProcessWriteOutputs", null, expression);
+                    return Expression.Call(typeof(BehaviorCommand), "ProcessWriteOutputs", null, expression);
 
                 /************************************************************************/
                 /* Register: WRITE_A0                                                   */
                 /************************************************************************/
-                case IblBehaviorCommandType.WriteAnalogOutput:
+                case BehaviorCommandType.WriteAnalogOutput:
                     if (expression.Type != typeof(float)) { expression = Expression.Convert(expression, typeof(float)); }
-                    return Expression.Call(typeof(IblBehaviorCommand), "ProcessWriteAnalogOutput", null, expression);
+                    return Expression.Call(typeof(BehaviorCommand), "ProcessWriteAnalogOutput", null, expression);
 
-                case IblBehaviorCommandType.WriteRegisterAnalogOutput:
+                case BehaviorCommandType.WriteRegisterAnalogOutput:
                     if (expression.Type != typeof(UInt16)) { expression = Expression.Convert(expression, typeof(UInt16)); }
-                    return Expression.Call(typeof(IblBehaviorCommand), "ProcessWriteRegisterAnalogOutput", null, expression);
+                    return Expression.Call(typeof(BehaviorCommand), "ProcessWriteRegisterAnalogOutput", null, expression);
 
                 /************************************************************************/
                 /* Register: ENCODER                                                    */
                 /************************************************************************/
-                case IblBehaviorCommandType.WriteEncoder:
+                case BehaviorCommandType.WriteEncoder:
                     if (expression.Type != typeof(Int16)) { expression = Expression.Convert(expression, typeof(Int16)); }
-                    return Expression.Call(typeof(IblBehaviorCommand), "ProcessWriteEncoder", null, expression);
+                    return Expression.Call(typeof(BehaviorCommand), "ProcessWriteEncoder", null, expression);
 
                 default:
                     break;

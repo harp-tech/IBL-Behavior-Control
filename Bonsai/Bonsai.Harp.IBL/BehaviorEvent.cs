@@ -10,9 +10,9 @@ using System.Text;
 using TResult = System.String;
 using System.ComponentModel;
 
-namespace Bonsai.Harp.IBL.Behavior
+namespace Bonsai.Harp.IBL
 {
-    public enum IblBehaviorEventType : byte
+    public enum BehaviorEventType : byte
     {
         /* Event: DATA_STREAMM */
         AnalogSensor = 0,
@@ -61,11 +61,11 @@ namespace Bonsai.Harp.IBL.Behavior
         "(*) Only distinct contiguous elements are propagated."
     )]
 
-    public class IblBehaviorEvent : SingleArgumentExpressionBuilder, INamedElement
+    public class BehaviorEvent : SingleArgumentExpressionBuilder, INamedElement
     {
-        public IblBehaviorEvent()
+        public BehaviorEvent()
         {
-            Type = IblBehaviorEventType.AnalogSensor;
+            Type = BehaviorEventType.AnalogSensor;
         }
 
         string INamedElement.Name
@@ -74,7 +74,7 @@ namespace Bonsai.Harp.IBL.Behavior
             get { return Type.ToString(); }
         }
 
-        public IblBehaviorEventType Type { get; set; }
+        public BehaviorEventType Type { get; set; }
 
         public override Expression Build(IEnumerable<Expression> expressions)
         {
@@ -84,64 +84,64 @@ namespace Bonsai.Harp.IBL.Behavior
                 /************************************************************************/
                 /* Register: DATA_STREAM                                                */
                 /************************************************************************/
-                case IblBehaviorEventType.AnalogSensor:
-                    return Expression.Call(typeof(IblBehaviorEvent), "ProcessAnalogSensor", null, expression);
+                case BehaviorEventType.AnalogSensor:
+                    return Expression.Call(typeof(BehaviorEvent), "ProcessAnalogSensor", null, expression);
 
-                case IblBehaviorEventType.AnalogInput:
-                    return Expression.Call(typeof(IblBehaviorEvent), "ProcessAnalogInput", null, expression);
+                case BehaviorEventType.AnalogInput:
+                    return Expression.Call(typeof(BehaviorEvent), "ProcessAnalogInput", null, expression);
                 
-                case IblBehaviorEventType.Encoder:
-                    return Expression.Call(typeof(IblBehaviorEvent), "ProcessEncoder", null, expression);
+                case BehaviorEventType.Encoder:
+                    return Expression.Call(typeof(BehaviorEvent), "ProcessEncoder", null, expression);
 
                 /************************************************************************/
                 /* Register: DATA_STREAM (registers)                                    */
                 /************************************************************************/
 
-                case IblBehaviorEventType.RegisterAnalogSensor:
-                    return Expression.Call(typeof(IblBehaviorEvent), "ProcessRegisterAnalogSensor", null, expression);
+                case BehaviorEventType.RegisterAnalogSensor:
+                    return Expression.Call(typeof(BehaviorEvent), "ProcessRegisterAnalogSensor", null, expression);
 
-                case IblBehaviorEventType.RegisterAnalogInput:
-                    return Expression.Call(typeof(IblBehaviorEvent), "ProcessRegisterAnalogInput", null, expression);
+                case BehaviorEventType.RegisterAnalogInput:
+                    return Expression.Call(typeof(BehaviorEvent), "ProcessRegisterAnalogInput", null, expression);
 
                 /************************************************************************/
                 /* Register: DATA_STREAM (thresholds)                                   */
                 /************************************************************************/
-                case IblBehaviorEventType.AnalogSensorTh0:
-                    return Expression.Call(typeof(IblBehaviorEvent), "ProcessAnalogSensorTh0", null, expression);
+                case BehaviorEventType.AnalogSensorTh0:
+                    return Expression.Call(typeof(BehaviorEvent), "ProcessAnalogSensorTh0", null, expression);
 
-                case IblBehaviorEventType.AnalogSensorTh1:
-                    return Expression.Call(typeof(IblBehaviorEvent), "ProcessAnalogSensorTh1", null, expression);
+                case BehaviorEventType.AnalogSensorTh1:
+                    return Expression.Call(typeof(BehaviorEvent), "ProcessAnalogSensorTh1", null, expression);
 
-                case IblBehaviorEventType.AnalogInputTh0:
-                    return Expression.Call(typeof(IblBehaviorEvent), "ProcessAnalogInputTh0", null, expression);
+                case BehaviorEventType.AnalogInputTh0:
+                    return Expression.Call(typeof(BehaviorEvent), "ProcessAnalogInputTh0", null, expression);
 
-                case IblBehaviorEventType.AnalogInputTh1:
-                    return Expression.Call(typeof(IblBehaviorEvent), "ProcessAnalogInputTh1", null, expression);
+                case BehaviorEventType.AnalogInputTh1:
+                    return Expression.Call(typeof(BehaviorEvent), "ProcessAnalogInputTh1", null, expression);
 
-                case IblBehaviorEventType.EncoderTh0:
-                    return Expression.Call(typeof(IblBehaviorEvent), "ProcessEncoderTh0", null, expression);
+                case BehaviorEventType.EncoderTh0:
+                    return Expression.Call(typeof(BehaviorEvent), "ProcessEncoderTh0", null, expression);
 
-                case IblBehaviorEventType.EncoderTh1:
-                    return Expression.Call(typeof(IblBehaviorEvent), "ProcessEncoderTh1", null, expression);
+                case BehaviorEventType.EncoderTh1:
+                    return Expression.Call(typeof(BehaviorEvent), "ProcessEncoderTh1", null, expression);
 
                 /************************************************************************/
                 /* Register: INPUTS                                                     */
                 /************************************************************************/
-                case IblBehaviorEventType.InputIO0:
-                    return Expression.Call(typeof(IblBehaviorEvent), "ProcessInputIO0", null, expression);
+                case BehaviorEventType.InputIO0:
+                    return Expression.Call(typeof(BehaviorEvent), "ProcessInputIO0", null, expression);
 
-                case IblBehaviorEventType.InputIO1:
-                    return Expression.Call(typeof(IblBehaviorEvent), "ProcessInputIO1", null, expression);
+                case BehaviorEventType.InputIO1:
+                    return Expression.Call(typeof(BehaviorEvent), "ProcessInputIO1", null, expression);
 
-                case IblBehaviorEventType.InputIO2:
-                    return Expression.Call(typeof(IblBehaviorEvent), "ProcessInputIO2", null, expression);
+                case BehaviorEventType.InputIO2:
+                    return Expression.Call(typeof(BehaviorEvent), "ProcessInputIO2", null, expression);
 
 
                 /************************************************************************/
                 /* Register: INPUTS (register)                                          */
                 /************************************************************************/
-                case IblBehaviorEventType.RegisterInputs:
-                    return Expression.Call(typeof(IblBehaviorEvent), "ProcessRegisterInputs", null, expression);
+                case BehaviorEventType.RegisterInputs:
+                    return Expression.Call(typeof(BehaviorEvent), "ProcessRegisterInputs", null, expression);
 
 
                 /************************************************************************/
