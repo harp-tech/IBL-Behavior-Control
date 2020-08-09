@@ -4,6 +4,10 @@ Repository for the IBL's new behavior control system, based on Harp technology.
 
 ![DeviceFront](Pics/front.jpg)
 
+# Documentation
+
+Manuals can be found in the folder *Manuals*
+
 # Licensing
 
 The code, designs, documentation, and photos available in this repository is free: you can redistribute it and/or modify it under the terms of the used license.
