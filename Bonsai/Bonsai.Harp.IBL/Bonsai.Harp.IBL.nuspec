@@ -11,6 +11,6 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
     <copyright>$author$ © 2020</copyright>
-    <tags>IBL Open Ephys Harp Behavior Control Neuro Neuroscience</tags>
+    <tags>Bonsai IBL Open Ephys Harp Behavior Control Neuro Neuroscience</tags>
   </metadata>
 </package>
