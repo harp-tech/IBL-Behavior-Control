@@ -29,6 +29,7 @@ namespace Bonsai.Harp.IBL
         InputIO0,
         InputIO1,
         InputIO2,
+        UserInput,
 
         /* Raw data */
         RegisterAnalogSensor,
@@ -53,6 +54,7 @@ namespace Bonsai.Harp.IBL
         "InputIO0: Boolean (*)\n" +
         "InputIO1: Boolean (*)\n" +
         "InputIO2: Boolean (*)\n" +
+        "UserInput: Boolean (*)\n" +
         "\n" +
         "RegisterAnalogSensor: Bitmask\n" +
         "RegisterAnalogInput: Bitmask\n" +
@@ -135,6 +137,9 @@ namespace Bonsai.Harp.IBL
 
                 case BehaviorEventType.InputIO2:
                     return Expression.Call(typeof(BehaviorEvent), "ProcessInputIO2", null, expression);
+
+                case BehaviorEventType.UserInput:
+                    return Expression.Call(typeof(BehaviorEvent), "ProcessUserInput", null, expression);
 
 
                 /************************************************************************/
@@ -237,6 +242,11 @@ namespace Bonsai.Harp.IBL
         static IObservable<bool> ProcessInputIO2(IObservable<HarpMessage> source)
         {
             return source.Where(is_evt34).Select(input => { return ((input.MessageBytes[11] & (1 << 2)) == (1 << 2)); }).DistinctUntilChanged();
+        }
+
+        static IObservable<bool> ProcessUserInput(IObservable<HarpMessage> source)
+        {
+            return source.Where(is_evt34).Select(input => { return ((input.MessageBytes[11] & (1 << 3)) == (1 << 3)); }).DistinctUntilChanged();
         }
 
         /************************************************************************/

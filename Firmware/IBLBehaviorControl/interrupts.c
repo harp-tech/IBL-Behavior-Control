@@ -31,6 +31,17 @@ extern AppRegs app_regs;
 /************************************************************************/
 ISR(PORTC_INT0_vect, ISR_NAKED)
 {
+	if(read_USER)
+	{
+		app_regs.REG_INPUTS &= ~B_USER;
+	}
+	else
+	{
+		app_regs.REG_INPUTS |= B_USER;
+	}
+		
+	core_func_send_event(ADD_REG_INPUTS, true);
+		
 	reti();
 }
 
